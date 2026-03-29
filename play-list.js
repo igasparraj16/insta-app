@@ -23,7 +23,6 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
   constructor() {
     super();
     this.currIndex = 0;
-    this.channelName = "";
     this.profilePhoto = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
     this.username = "";
     this.handle = "";
@@ -39,7 +38,6 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
     return {
       ...super.properties,
       currIndex: { type: Number , reflect: true},
-      channelName: { type: String },
       profilePhoto: { type: String },
       username: { type: String },
       handle: { type: String },
@@ -82,10 +80,6 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       slide-indicator {
         right: var(--ddd-spacing-4);
         z-index: 1;
-      }
-      .channel-name {
-        color: black;
-        font-size: var(--ddd-font-size-s);
       }
       .user-info {
         display: flex;
@@ -160,7 +154,6 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       <div class="wrapper">
         <h3><span>${this.t.title}</span> ${this.title}</h3>
         <div class="single-slide">
-          <h4 class="channel-name">${this.channelName}</h4>
           <div class="user-info">
             <img src="${this.profilePhoto}" alt="profile photo" class="profile-photo">
             <div class="user-meta">
@@ -172,7 +165,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
           <div class="photo-wrapper">
             <img src="${this.photo}" alt="Slide photo" class="slide-photo">
           </div>
-          <slide-indicator 
+          <slide-indicator
             .total=${this.slides.length}
             .currIndex=${this.currIndex}
             @play-list-index-changed="${this._handleIndexChange}">
@@ -222,7 +215,6 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
 
     const curSlide = this.slides[this.currIndex];
     if (curSlide) {
-      this.channelName = curSlide.channelName;
       this.username = curSlide.username;
       this.handle = curSlide.handle;
       this.memberSince = curSlide.memberSince;
@@ -246,7 +238,6 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       }
 
       this.slides = data.images.map((item) => ({
-        channelName: item.channelName || "",
         username: item.username || "",
         handle: item.handle || "",
         memberSince: item.memberSince || "",
