@@ -1,0 +1,44 @@
+{
+    "images": [
+        {
+            "channelName": "food",
+            "username": "foodie123",
+            "handle": "@foodie123",
+            "memberSince": "Member since 04-12-2012",
+            "caption": "Delicious pasta with tomato sauce and basil.",
+            "datePosted": "Posted on 03-11-2026",
+            "photo": "https://static01.nyt.com/images/2025/08/07/multimedia/JD-Corn-and-Parmesan-Pasta-whkq/JD-Corn-and-Parmesan-Pasta-whkq-mediumSquareAt3X.jpg",
+            "profilePhoto": "https://images.squarespace-cdn.com/content/v1/574512d92eeb81676262d877/1dc1f125-b7d6-4302-8d3b-b25c3dc2a546/Headshot-Photographer-London-UK-Ian-Kobylanki-292.jpg"
+        },
+        {
+            "channelName": "travel",
+            "username": "wanderlust",
+            "handle": "@wanderlust",
+            "memberSince": "Member since 09-03-2014",
+            "caption": "Sunset over the mountains during my hike.",
+            "datePosted": "Posted on 03-19-2026",
+            "photo": "https://img.freepik.com/free-photo/sunset-time-tropical-beach-sea-with-coconut-palm-tree_74190-1075.jpg?semt=ais_incoming&w=740&q=80",
+            "profilePhoto": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRs10cupyp3Wf-pZvdPjGQuKne14ngVZbYdDQ&s"
+        },
+        {
+            "channelName": "fashion",
+            "username": "styleguru",
+            "handle": "@styleguru",
+            "memberSince": "Member since 11-15-2009",
+            "caption": "My outfit of the day! Loving this new jacket.",
+            "datePosted": "Posted on 03-22-2026",
+            "photo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVT0Z-6iF7fHngkQx4HV45mdjHiTq_8dKzEw&s",
+            "profilePhoto": "https://arindamdasguptaphotography.com/corporate-headshots-photography/"
+        },
+        {
+            "channelName": "fitness",
+            "username": "fitlife",
+            "handle": "@fitnessqueen",
+            "memberSince": "Member since 02-21-2011",
+            "caption": "Morning workout routine to start the day right!",
+            "datePosted": "Posted on 03-25-2026",
+            "photo": "https://media.istockphoto.com/id/2027281054/photo/young-sportswoman-doing-side-sit-ups-with-medicine-ball-while-exercising-in-health-club.jpg?s=612x612&w=0&k=20&c=TM8DPYR-2TYdqXVWVRYv_Yr8QaJyCsMFBn8Bo9OViIE=",
+            "profilePhoto": "https://www.myclickmagazine.com/wp-content/uploads/2020/09/leslie-crane-creative-headshots-1.jpg"
+        }
+    ]
+}
