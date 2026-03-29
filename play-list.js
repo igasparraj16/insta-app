@@ -5,7 +5,7 @@
 import { LitElement, html, css } from "lit";
 import { DDDSuper } from "@haxtheweb/d-d-d/d-d-d.js";
 import { I18NMixin } from "@haxtheweb/i18n-manager/lib/I18NMixin.js";
-import "./play-list-slide.js";
+import "./slide-indicator.js";
 import "./slide-arrow.js";
 
 /**
@@ -26,9 +26,12 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
     this.channelName = "";
     this.profilePhoto = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
     this.username = "";
+    this.handle = "";
+    this.memberSince = "";
     this.caption = "";
+    this.datePosted = "";
     this.photo = "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d";    
-    this.slides = Array.from(this.querySelectorAll("play-list-slide"));
+    this.slides = [];
   }
 
   // Lit reactive properties
@@ -39,8 +42,11 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       channelName: { type: String },
       profilePhoto: { type: String },
       username: { type: String },
+      handle: { type: String },
+      memberSince: { type: String },
       caption: { type: String },
-      slides: { type: String },
+      datePosted: { type: String },
+      slides: { type: Array },
       index: { type: Number },
       photo: { type: String }
     };
@@ -64,10 +70,18 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         padding: var(--ddd-spacing-4);
       }
       .single-slide {
-        background-color: var(--ddd-theme-default-slateMaxLight);
+        position: relative;
+        background-color: var(--ddd-theme-default-potential0);
         padding: var(--ddd-spacing-8);
-        border-radius: 4px;
+        border-radius: 8px;
+        border-color: var(--ddd-theme-default-limestoneMaxLight);
+        border-width: var(--ddd-border-size-sm);
+        border-style: solid;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      slide-indicator {
+        right: var(--ddd-spacing-4);
+        z-index: 1;
       }
       .channel-name {
         color: black;
@@ -77,16 +91,33 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         display: flex;
         gap: var(--ddd-spacing-2);
         align-items: center;
+        padding: var(--ddd-spacing-4) 0;
       }
       .profile-photo {
         border-radius: 50%;
         width: 40px;
         height: 40px;
+        object-fit: cover;
+        display: block;
       }
       .username {
-        color: darkolivegreen;
-        font-size: var(--ddd-font-size-m);
+        color: var(--ddd-theme-default-coalyGray);  
+        font-size: var(--ddd-font-size-s);
         font-weight: var(--ddd-font-weight-bold);
+        margin: 0;
+        line-height: 1;
+      }
+      .user-meta {
+        display: flex;
+        flex-direction: column;
+        gap: var(--ddd-spacing-1);
+      }
+      .handle,
+      .member-since {
+        margin: 0;
+        color: var(--ddd-theme-default-coalyGray);
+        font-size: var(--ddd-font-size-4xs);
+        line-height: 1.2;
       }
       .caption {
         font-weight: var(--ddd-font-weight-base);
@@ -95,15 +126,31 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         overflow-y: auto;
         max-width: 600px;
         color: black;
+        margin-bottom: var(--ddd-spacing-1);
+      }
+      .date-posted {
+        margin: 0;
+        color: var(--ddd-theme-default-coalyGray);
+        font-size: var(--ddd-font-size-4xs);
       }
       .arrow-wrapper {
-        position: relative;
-        top: -190px;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
       }
       .slide-photo {
         width: 100%;
-        height: auto;      
-    }
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .photo-wrapper {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+      }
     `];
   }
 
@@ -116,15 +163,22 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
           <h4 class="channel-name">${this.channelName}</h4>
           <div class="user-info">
             <img src="${this.profilePhoto}" alt="profile photo" class="profile-photo">
-            <h3 class="username">${this.username}</h3>
+            <div class="user-meta">
+              <h3 class="username">${this.username}</h3>
+              <p class="handle">${this.handle}</p>
+              <p class="member-since">${this.memberSince}</p>
+            </div>
           </div>
-          <img src="${this.photo}" alt="Slide photo" class="slide-photo">
+          <div class="photo-wrapper">
+            <img src="${this.photo}" alt="Slide photo" class="slide-photo">
+          </div>
           <slide-indicator 
             .total=${this.slides.length}
-            .currIndex="${this.currIndex}"
+            .currIndex=${this.currIndex}
             @play-list-index-changed="${this._handleIndexChange}">
           </slide-indicator>
           <h5 class="caption">${this.caption || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}</h5>
+          <p class="date-posted">${this.datePosted}</p>
           <div class="arrow-wrapper">
             <slide-arrow
               .index=${this.currIndex}
@@ -138,10 +192,13 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
     `;
   }
 
-    firstUpdated() {  
+  async firstUpdated() {
     if (this.index !== undefined) {
       this.currIndex = this.index;
     }
+
+    await this._loadSlidesFromJson();
+
     this._updateSlides();
   }
 
@@ -152,18 +209,56 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
   }
 
   _updateSlides() {
-    this.slides.forEach((slide, i) => {
-      slide.active = (i === this.currIndex)
-    });
+    if (!this.slides.length) {
+      return;
+    }
+
+    if (this.currIndex < 0) {
+      this.currIndex = 0;
+    }
+    if (this.currIndex > this.slides.length - 1) {
+      this.currIndex = this.slides.length - 1;
+    }
 
     const curSlide = this.slides[this.currIndex];
     if (curSlide) {
-      this.channelName = curSlide.getAttribute("channel-name");
-      this.username = curSlide.getAttribute("username");
-      this.caption = curSlide.getAttribute("caption");
-      this.photo = curSlide.getAttribute("photo");
-      this.profilePhoto = curSlide.getAttribute("profilePhoto");
+      this.channelName = curSlide.channelName;
+      this.username = curSlide.username;
+      this.handle = curSlide.handle;
+      this.memberSince = curSlide.memberSince;
+      this.caption = curSlide.caption;
+      this.datePosted = curSlide.datePosted;
+      this.photo = curSlide.photo;
+      this.profilePhoto = curSlide.profilePhoto;
     } 
+  }
+
+  async _loadSlidesFromJson() {
+    try {
+      const response = await fetch(new URL("./data.json", import.meta.url));
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data?.images) || data.images.length === 0) {
+        return;
+      }
+
+      this.slides = data.images.map((item) => ({
+        channelName: item.channelName || "",
+        username: item.username || "",
+        handle: item.handle || "",
+        memberSince: item.memberSince || "",
+        caption: item.caption || "",
+        datePosted: item.datePosted || "",
+        photo: item.photo || "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d",
+        profilePhoto: item.profilePhoto || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
+      }));
+    }
+    catch (error) {
+      this.slides = [];
+    }
   }
 
   next() {
