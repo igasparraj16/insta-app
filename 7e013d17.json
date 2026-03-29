@@ -1,7 +1,6 @@
 {
     "images": [
         {
-            "channelName": "food",
             "username": "foodie123",
             "handle": "@foodie123",
             "memberSince": "Member since 04-12-2012",
@@ -11,7 +10,6 @@
             "profilePhoto": "https://images.squarespace-cdn.com/content/v1/574512d92eeb81676262d877/1dc1f125-b7d6-4302-8d3b-b25c3dc2a546/Headshot-Photographer-London-UK-Ian-Kobylanki-292.jpg"
         },
         {
-            "channelName": "travel",
             "username": "wanderlust",
             "handle": "@wanderlust",
             "memberSince": "Member since 09-03-2014",
@@ -21,17 +19,15 @@
             "profilePhoto": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRs10cupyp3Wf-pZvdPjGQuKne14ngVZbYdDQ&s"
         },
         {
-            "channelName": "fashion",
             "username": "styleguru",
             "handle": "@styleguru",
             "memberSince": "Member since 11-15-2009",
             "caption": "My outfit of the day! Loving this new jacket.",
             "datePosted": "Posted on 03-22-2026",
             "photo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVT0Z-6iF7fHngkQx4HV45mdjHiTq_8dKzEw&s",
-            "profilePhoto": "https://arindamdasguptaphotography.com/corporate-headshots-photography/"
+            "profilePhoto": "https://headshots-inc.com/wp-content/uploads/2023/03/professional-Headshot-Example-2-1.jpg"
         },
         {
-            "channelName": "fitness",
             "username": "fitlife",
             "handle": "@fitnessqueen",
             "memberSince": "Member since 02-21-2011",
