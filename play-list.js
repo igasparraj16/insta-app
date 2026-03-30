@@ -120,7 +120,16 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         overflow-y: auto;
         max-width: 600px;
         color: black;
-        margin-bottom: var(--ddd-spacing-1);
+        margin: var(--ddd-spacing-1);
+      }
+      .like-button {
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        font-size: var(--ddd-font-size-m);
+        line-height: 1;
+        margin: var(--ddd-spacing-2) 0;
       }
       .date-posted {
         margin: 0;
@@ -150,6 +159,8 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
 
   // Lit render the HTML
   render() {
+    const isLiked = this.slides[this.currIndex]?.liked || false;
+
     return html`
       <div class="wrapper">
         <h3><span>${this.t.title}</span> ${this.title}</h3>
@@ -168,8 +179,12 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
           <slide-indicator
             .total=${this.slides.length}
             .currIndex=${this.currIndex}
+            .thumbnails=${this.slides.map((slide) => slide.photo)}
             @play-list-index-changed="${this._handleIndexChange}">
           </slide-indicator>
+          <button class="like-button" @click="${this._toggleLike}" aria-label="Like post">
+            ${isLiked ? "❤️" : "🤍"}
+          </button>
           <h5 class="caption">${this.caption || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}</h5>
           <p class="date-posted">${this.datePosted}</p>
           <div class="arrow-wrapper">
@@ -245,6 +260,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         datePosted: item.datePosted || "",
         photo: item.photo || "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d",
         profilePhoto: item.profilePhoto || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
+        liked: Boolean(item.liked),
       }));
     }
     catch (error) {
@@ -270,6 +286,19 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
     if (newIndex >= 0 && newIndex < this.slides.length) {
       this.currIndex = newIndex;
     }
+  }
+
+  _toggleLike() {
+    if (this.currIndex < 0 || this.currIndex >= this.slides.length) {
+      return;
+    }
+
+    const updatedSlides = [...this.slides];
+    updatedSlides[this.currIndex] = {
+      ...updatedSlides[this.currIndex],
+      liked: !updatedSlides[this.currIndex].liked,
+    };
+    this.slides = updatedSlides;
   }
 }
 

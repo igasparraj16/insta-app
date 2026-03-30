@@ -24,6 +24,7 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
     this.color = "var(--ddd-theme-default-skyBlue)";
     this.total = 4;
     this.currIndex = 0;
+    this.thumbnails = [];
   }
 
   // Lit reactive properties
@@ -33,7 +34,8 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
       title: { type: String },
       color: { type: String }, 
       total: { type: Number },
-      currIndex: { type: Number }
+      currIndex: { type: Number },
+      thumbnails: { type: Array }
     };
   }
 
@@ -58,22 +60,43 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
         margin-bottom: var(--ddd-spacing-2);
       }
       .dot {
-        width: 12px;
-        height: 12px;
-        background-color: var(--ddd-theme-default-skyBlue);
-        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 32px;
+        width: 32px;
+        height: 32px;
         cursor: pointer;
         opacity: 0.5;
-        margin: var(--ddd-spacing-2);
+        overflow: hidden;
+        padding: 0;
       }
       .dot.active {
         opacity: 1;
-        background-color: var(--ddd-theme-default-beaverBlue);
+        border-color: var(--ddd-theme-default-beaverBlue);
+      }
+      .dot img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
       .dots {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: var(--ddd-spacing-2) 0;
+      }
+      .dots::-webkit-scrollbar {
+        display: none;
+      }
+      .track {
         display: flex;
         gap: var(--ddd-spacing-3);
         align-items: center;
+        width: max-content;
       }
 
     `];
@@ -83,24 +106,62 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
   render() {
     let dots = [];
     for (let i = 0; i < this.total; i++) {
+      const thumbnailSrc = this.thumbnails?.[i] || "";
       dots.push(html`
-        <span @click="${(e) => this._handleDotClick(e)}" data-index="${i}" class="dot ${i === this.currIndex ? 'active' : ''}"></span>
+        <button @click="${(e) => this._handleDotClick(e)}" data-index="${i}" class="dot ${i === this.currIndex ? 'active' : ''}" aria-label="Go to slide ${i + 1}">
+          ${thumbnailSrc
+            ? html`<img src="${thumbnailSrc}" alt="Slide ${i + 1} thumbnail" data-index="${i}">`
+            : ""}
+        </button>
       `);
     }
 
     return html`
       <div class="dots">
-        ${dots}
+        <div class="track">
+          ${dots}
+        </div>
       </div>
       `;
   }
 
+  firstUpdated() {
+    this._syncCarousel("auto");
+  }
+
+  updated(changedProperties) {
+    if (
+      changedProperties.has("currIndex") ||
+      changedProperties.has("thumbnails") ||
+      changedProperties.has("total")
+    ) {
+      this._syncCarousel();
+    }
+  }
+
+  _syncCarousel(behavior = "smooth") {
+    const container = this.renderRoot?.querySelector(".dots");
+    const activeDot = this.renderRoot?.querySelector(".dot.active");
+
+    if (!container || !activeDot) {
+      return;
+    }
+
+    const targetLeft = activeDot.offsetLeft - (container.clientWidth - activeDot.clientWidth) / 2;
+    const maxLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+    const left = Math.max(0, Math.min(targetLeft, maxLeft));
+
+    container.scrollTo({ left, behavior });
+  }
+
   _handleDotClick(e) {
+    const index = parseInt(e.currentTarget.dataset.index);
+
     const indexChange = new CustomEvent("play-list-index-changed", {
       composed: true,
       bubbles: true,
       detail: {
-        index: parseInt(e.target.dataset.index)
+        index
       },
     });
     this.dispatchEvent(indexChange);
