@@ -23,14 +23,14 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
   constructor() {
     super();
     this.currIndex = 0;
-    this.profilePhoto = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
+    this.profilePhoto = "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg";
     this.profilePhotoAlt = "User profile photo";
     this.username = "";
     this.handle = "";
     this.memberSince = "";
     this.caption = "";
     this.datePosted = "";
-    this.photo = "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d";    
+    this.photo = "https://freesvg.org/img/Placeholder.png";    
     this.photoAlt = "Slide photo";
     this.shareLink = globalThis.location?.href || "";
     this.copied = false;
@@ -88,6 +88,19 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         border-width: var(--ddd-border-size-sm);
         border-style: solid;
         box-shadow: var(--ddd-boxShadow-sm);
+      }
+      @media (max-width: calc(var(--ddd-breakpoint-sm))) {
+        :host {
+          width: 96%;
+          padding: var(--ddd-spacing-2);
+        }
+        .wrapper {
+          margin: var(--ddd-spacing-0);
+          padding: var(--ddd-spacing-0);
+        }
+        .single-slide {
+          padding: var(--ddd-spacing-2);
+        }
       }
       slide-indicator {
         right: var(--ddd-spacing-4);
@@ -153,6 +166,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         display: inline-flex;
         align-items: center;
         margin-left: auto;
+        z-index: 1000;
       }
       .share-button {
         border: var(--ddd-border-size-xs) solid var(--ddd-theme-default-link);
@@ -173,6 +187,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         padding: 5px 10px;
         border-radius: var(--ddd-radius-rounded);
         font-size: var(--ddd-font-size-xxs);
+        z-index: 1001;
       }
       .copied-note {
         margin: var(--ddd-spacing-0);
