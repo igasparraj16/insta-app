@@ -52,7 +52,7 @@ export class SlideArrow extends DDDSuper(I18NMixin(LitElement)) {
         width: 40px;
         height: 40px;
         background-color: var(--ddd-theme-default-slateMaxLight); 
-        border-radius: 50%;
+        border-radius: var(--ddd-radius-rounded);
         border-color: var(--ddd-theme-default-potentialMidnight);
         border-width: var(--ddd-border-size-sm);
         border-style: solid;
@@ -79,13 +79,22 @@ export class SlideArrow extends DDDSuper(I18NMixin(LitElement)) {
 
   // Lit render the HTML
   render() {
+    const prevDisabled = this.index === 0;
+    const nextDisabled = this.index === this.total - 1;
+    const prevLabel = prevDisabled ? "No more slides this way" : "Previous Slide";
+    const nextLabel = nextDisabled ? "No more slides this way" : "Next slide";
+
     return html`
     <div class="wrapper">
         <button class="prev" 
-        ?disabled="${this.index === 0}"
+      ?disabled="${prevDisabled}"
+      title="${prevLabel}"
+      aria-label="${prevLabel}"
         @click=${() => this.dispatchEvent(new CustomEvent('prev-clicked', {bubbles: true, composed: true }))}><</button>
         <button class="next" 
-        ?disabled="${this.index === this.total - 1}"
+      ?disabled="${nextDisabled}"
+      title="${nextLabel}"
+      aria-label="${nextLabel}"
         @click=${() => this.dispatchEvent(new CustomEvent('next-clicked', {bubbles: true, composed: true}))}>></button>
     </div>
 

@@ -25,6 +25,7 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
     this.total = 4;
     this.currIndex = 0;
     this.thumbnails = [];
+    this.thumbnailAlts = [];
   }
 
   // Lit reactive properties
@@ -35,7 +36,8 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
       color: { type: String }, 
       total: { type: Number },
       currIndex: { type: Number },
-      thumbnails: { type: Array }
+      thumbnails: { type: Array },
+      thumbnailAlts: { type: Array }
     };
   }
 
@@ -69,7 +71,7 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
         cursor: pointer;
         opacity: 0.5;
         overflow: hidden;
-        padding: 0;
+        padding: var(--ddd-spacing-0);
       }
       .dot.active {
         opacity: 1;
@@ -107,10 +109,11 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
     let dots = [];
     for (let i = 0; i < this.total; i++) {
       const thumbnailSrc = this.thumbnails?.[i] || "";
+      const thumbnailAlt = this.thumbnailAlts?.[i] || `Slide ${i + 1} thumbnail`;
       dots.push(html`
         <button @click="${(e) => this._handleDotClick(e)}" data-index="${i}" class="dot ${i === this.currIndex ? 'active' : ''}" aria-label="Go to slide ${i + 1}">
           ${thumbnailSrc
-            ? html`<img src="${thumbnailSrc}" alt="Slide ${i + 1} thumbnail" data-index="${i}">`
+            ? html`<img src="${thumbnailSrc}" alt="${thumbnailAlt}" data-index="${i}">`
             : ""}
         </button>
       `);

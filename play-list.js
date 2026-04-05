@@ -24,12 +24,16 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
     super();
     this.currIndex = 0;
     this.profilePhoto = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
+    this.profilePhotoAlt = "User profile photo";
     this.username = "";
     this.handle = "";
     this.memberSince = "";
     this.caption = "";
     this.datePosted = "";
     this.photo = "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d";    
+    this.photoAlt = "Slide photo";
+    this.shareLink = globalThis.location?.href || "";
+    this.copied = false;
     this.slides = [];
   }
 
@@ -46,7 +50,10 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       datePosted: { type: String },
       slides: { type: Array },
       index: { type: Number },
-      photo: { type: String }
+      photo: { type: String },
+      photoAlt: { type: String },
+      profilePhotoAlt: { type: String },
+      copied: { type: Boolean, state: true }
     };
   }
 
@@ -57,6 +64,8 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       :host {
         display: block;
         color: var(--ddd-theme-primary);
+        --insta-surface-color: light-dark(var(--ddd-theme-default-roarMaxlight), var(--ddd-theme-default-black));
+        --insta-text-color: light-dark(var(--ddd-theme-default-coalyGray), var(--ddd-theme-default-white));
         
         width: 90%;
         max-width: 500px;
@@ -69,13 +78,16 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       }
       .single-slide {
         position: relative;
-        background-color: var(--ddd-theme-default-potential0);
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        background-color: var(--insta-surface-color);
         padding: var(--ddd-spacing-8);
-        border-radius: 8px;
+        border-radius: var(--ddd-radius-sm);
         border-color: var(--ddd-theme-default-limestoneMaxLight);
         border-width: var(--ddd-border-size-sm);
         border-style: solid;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--ddd-boxShadow-sm);
       }
       slide-indicator {
         right: var(--ddd-spacing-4);
@@ -88,18 +100,18 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         padding: var(--ddd-spacing-4) 0;
       }
       .profile-photo {
-        border-radius: 50%;
+        border-radius: var(--ddd-theme-header-border-treatment-50p);
         width: 40px;
         height: 40px;
         object-fit: cover;
         display: block;
       }
       .username {
-        color: var(--ddd-theme-default-coalyGray);  
-        font-size: var(--ddd-font-size-s);
+        color: var(--insta-text-color);
+        font-size: var(--ddd-font-size-xs);
         font-weight: var(--ddd-font-weight-bold);
-        margin: 0;
-        line-height: 1;
+        margin: var(--ddd-spacing-0);
+        line-height: var(--ddd-lh-120);
       }
       .user-meta {
         display: flex;
@@ -108,39 +120,75 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       }
       .handle,
       .member-since {
-        margin: 0;
-        color: var(--ddd-theme-default-coalyGray);
-        font-size: var(--ddd-font-size-4xs);
-        line-height: 1.2;
+        margin: var(--ddd-spacing-0);
+        color: var(--insta-text-color);
+        font-size: var(--ddd-font-size-5xs);
+        line-height: var(--ddd-lh-120);
       }
       .caption {
         font-weight: var(--ddd-font-weight-base);
-        font-size: var(--ddd-font-size-xs);
-        max-height: 150px;
-        overflow-y: auto;
-        max-width: 600px;
-        color: black;
-        margin: var(--ddd-spacing-1);
+        font-size: var(--ddd-font-size-xxs);
+        overflow: visible;
+        max-width: 100%;
+        color: var(--insta-text-color);
+        margin: var(--ddd-spacing-1) 0;
       }
       .like-button {
         border: none;
         background: transparent;
-        padding: 0;
+        padding: var(--ddd-spacing-0);
         cursor: pointer;
         font-size: var(--ddd-font-size-m);
-        line-height: 1;
+        line-height: var(--ddd-lh-120);
         margin: var(--ddd-spacing-2) 0;
       }
-      .date-posted {
-        margin: 0;
-        color: var(--ddd-theme-default-coalyGray);
+      .action-row {
+        display: flex;
+        align-items: center;
+        gap: var(--ddd-spacing-3);
+        margin: var(--ddd-spacing-2) 0;
+      }
+      .share-wrapper {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        margin-left: auto;
+      }
+      .share-button {
+        border: var(--ddd-border-size-xs) solid var(--ddd-theme-default-link);
+        border-radius: var(--ddd-radius-rounded);
+        background: transparent;
+        padding: var(--ddd-spacing-1) var(--ddd-spacing-3);
+        cursor: pointer;
+        font-size: var(--ddd-font-size-xxs);
+        color: var(--ddd-theme-default-link);
+        line-height: var(--ddd-lh-120);
+      }
+      .popup {
+        position: absolute;
+        top: -40px;
+        left: var(--ddd-spacing-10);
+        background: black;
+        color: var(--ddd-theme-default-white);
+        padding: 5px 10px;
+        border-radius: var(--ddd-radius-rounded);
+        font-size: var(--ddd-font-size-xxs);
+      }
+      .copied-note {
+        margin: var(--ddd-spacing-0);
         font-size: var(--ddd-font-size-4xs);
+        color: var(--insta-text-color);
+      }
+      .date-posted {
+        margin: var(--ddd-spacing-0);
+        color: var(--insta-text-color);
+        font-size: var(--ddd-font-size-5xs);
       }
       .arrow-wrapper {
         position: absolute;
         top: 50%;
-        left: 0;
-        right: 0;
+        left: var(--ddd-spacing-0);
+        right: var(--ddd-spacing-0);
         transform: translateY(-50%);
       }
       .slide-photo {
@@ -152,7 +200,28 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       .photo-wrapper {
         width: 100%;
         aspect-ratio: 1 / 1;
+        flex: 0 0 auto;
+        height: auto;
+        min-height: 0;
         overflow: hidden;
+      }
+      @media (min-width: var(--ddd-breakpoint-md)) {
+        .username {
+          font-size: var(--ddd-font-size-s);
+        }
+        .handle,
+        .member-since {
+          font-size: var(--ddd-font-size-4xs);
+        }
+        .caption {
+          font-size: var(--ddd-font-size-xs);
+        }
+        .share-button {
+          font-size: var(--ddd-font-size-xs);
+        }
+        .date-posted {
+          font-size: var(--ddd-font-size-4xs);
+        }
       }
     `];
   }
@@ -166,7 +235,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         <h3><span>${this.t.title}</span> ${this.title}</h3>
         <div class="single-slide">
           <div class="user-info">
-            <img src="${this.profilePhoto}" alt="profile photo" class="profile-photo">
+            <img src="${this.profilePhoto}" alt="${this.profilePhotoAlt}" class="profile-photo">
             <div class="user-meta">
               <h3 class="username">${this.username}</h3>
               <p class="handle">${this.handle}</p>
@@ -174,17 +243,28 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
             </div>
           </div>
           <div class="photo-wrapper">
-            <img src="${this.photo}" alt="Slide photo" class="slide-photo">
+            <img src="${this.photo}" alt="${this.photoAlt}" class="slide-photo">
           </div>
           <slide-indicator
             .total=${this.slides.length}
             .currIndex=${this.currIndex}
             .thumbnails=${this.slides.map((slide) => slide.photo)}
+            .thumbnailAlts=${this.slides.map((slide) => slide.photoAlt)}
             @play-list-index-changed="${this._handleIndexChange}">
           </slide-indicator>
-          <button class="like-button" @click="${this._toggleLike}" aria-label="Like post">
-            ${isLiked ? "❤️" : "🤍"}
-          </button>
+          <div class="action-row">
+            <button class="like-button" @click="${this._toggleLike}" aria-label="Like post">
+              ${isLiked ? "❤️" : "🤍"}
+            </button>
+            <div class="share-wrapper">
+              <button class="share-button" @click="${this._copyLink}" aria-label="Share post">
+                Share
+              </button>
+              ${this.copied
+              ? html`<div class="popup">Copied!</div>`
+              : ""}
+            </div>
+          </div>
           <h5 class="caption">${this.caption || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}</h5>
           <p class="date-posted">${this.datePosted}</p>
           <div class="arrow-wrapper">
@@ -201,6 +281,13 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
   }
 
   async firstUpdated() {
+    const params = new URLSearchParams(globalThis.location.search);
+    const activeIndex = Number(params.get("activeIndex"));
+
+    if (!Number.isNaN(activeIndex) && activeIndex >= 0) {
+      this.index = activeIndex;
+    }
+
     if (this.index !== undefined) {
       this.currIndex = this.index;
     }
@@ -213,7 +300,14 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
   updated(changedProperties) {
     if (changedProperties.has('currIndex')) {
       this._updateSlides();
+      this._syncActiveIndexInUrl();
     }
+  }
+
+  _syncActiveIndexInUrl() {
+    const url = new URL(globalThis.location.href);
+    url.searchParams.set("activeIndex", String(this.currIndex));
+    globalThis.history.replaceState({}, "", url);
   }
 
   _updateSlides() {
@@ -236,7 +330,9 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       this.caption = curSlide.caption;
       this.datePosted = curSlide.datePosted;
       this.photo = curSlide.photo;
+      this.photoAlt = curSlide.photoAlt;
       this.profilePhoto = curSlide.profilePhoto;
+      this.profilePhotoAlt = curSlide.profilePhotoAlt;
     } 
   }
 
@@ -260,8 +356,13 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         datePosted: item.datePosted || "",
         photo: item.photo || "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d",
         profilePhoto: item.profilePhoto || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
+        photoAlt: item.photoAlt || `${item.username || "User"} post photo`,
+        profilePhotoAlt: item.profilePhotoAlt || `${item.username || "User"} profile photo`,
         liked: Boolean(item.liked),
       }));
+
+      // Load liked state from localStorage
+      this._loadLikedState();
     }
     catch (error) {
       this.slides = [];
@@ -288,6 +389,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
     }
   }
 
+
   _toggleLike() {
     if (this.currIndex < 0 || this.currIndex >= this.slides.length) {
       return;
@@ -298,6 +400,39 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
       ...updatedSlides[this.currIndex],
       liked: !updatedSlides[this.currIndex].liked,
     };
+    this.slides = updatedSlides;
+
+    this._handleLikeToggle(this.currIndex, updatedSlides[this.currIndex].liked);
+  }
+
+  async _copyLink() {
+    try {
+      this.shareLink = globalThis.location?.href || this.shareLink;
+      await navigator.clipboard.writeText(this.shareLink);
+      this.copied = true;
+
+      if (this._copyTimeout) clearTimeout(this._copyTimeout);
+
+      this._copyTimeout = setTimeout(() => {
+        this.copied = false;
+      }, 1500);
+    } catch (e) {
+      console.error("copy failed");
+    }
+  }
+
+  _handleLikeToggle(imageId, liked) {
+    const likedImages = JSON.parse(localStorage.getItem("likedImages") || "{}");
+    likedImages[imageId] = liked;
+    localStorage.setItem("likedImages", JSON.stringify(likedImages));
+  }
+
+  _loadLikedState() {
+    const likedImages = JSON.parse(localStorage.getItem("likedImages") || "{}");
+    const updatedSlides = this.slides.map((slide, index) => ({
+      ...slide,
+      liked: likedImages[index] !== undefined ? likedImages[index] : slide.liked,
+    }));
     this.slides = updatedSlides;
   }
 }
