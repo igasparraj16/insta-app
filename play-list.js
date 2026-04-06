@@ -23,7 +23,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
   constructor() {
     super();
     this.currIndex = 0;
-    this.profilePhoto = "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg";
+    this.profilePhoto = "https://images.squarespace-cdn.com/content/v1/574512d92eeb81676262d877/1dc1f125-b7d6-4302-8d3b-b25c3dc2a546/Headshot-Photographer-London-UK-Ian-Kobylanki-292.jpg";
     this.profilePhotoAlt = "User profile photo";
     this.username = "";
     this.handle = "";
@@ -89,7 +89,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         border-style: solid;
         box-shadow: var(--ddd-boxShadow-sm);
       }
-      @media (max-width: calc(var(--ddd-breakpoint-sm))) {
+      @media (max-width: calc(var(--ddd-breakpoint-md, 768px) - 1px)) {
         :host {
           width: 96%;
           padding: var(--ddd-spacing-2);
@@ -263,7 +263,8 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
           <slide-indicator
             .total=${this.slides.length}
             .currIndex=${this.currIndex}
-            .thumbnails=${this.slides.map((slide) => slide.photo)}
+            .thumbnails=${this.slides.map((slide) => slide.thumbnailPhoto || slide.photo)}
+            .thumbnailFallbacks=${this.slides.map((slide) => slide.photo)}
             .thumbnailAlts=${this.slides.map((slide) => slide.photoAlt)}
             @play-list-index-changed="${this._handleIndexChange}">
           </slide-indicator>
@@ -370,6 +371,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         caption: item.caption || "",
         datePosted: item.datePosted || "",
         photo: item.photo || "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d",
+        thumbnailPhoto: this._toThumbnailUrl(item.photo),
         profilePhoto: item.profilePhoto || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
         photoAlt: item.photoAlt || `${item.username || "User"} post photo`,
         profilePhotoAlt: item.profilePhotoAlt || `${item.username || "User"} profile photo`,
@@ -440,6 +442,20 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
     const likedImages = JSON.parse(localStorage.getItem("likedImages") || "{}");
     likedImages[imageId] = liked;
     localStorage.setItem("likedImages", JSON.stringify(likedImages));
+  }
+
+  _toThumbnailUrl(url) {
+    if (!url) return url;
+    try {
+      const u = new URL(url);
+      u.searchParams.set("w", "90");
+      u.searchParams.set("h", "90");
+      u.searchParams.set("fit", "crop");
+      u.searchParams.set("auto", "format");
+      return u.toString();
+    } catch {
+      return url;
+    }
   }
 
   _loadLikedState() {

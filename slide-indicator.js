@@ -25,7 +25,9 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
     this.total = 4;
     this.currIndex = 0;
     this.thumbnails = [];
+    this.thumbnailFallbacks = [];
     this.thumbnailAlts = [];
+    this.visibleIndices = [];
   }
 
   // Lit reactive properties
@@ -37,7 +39,9 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
       total: { type: Number },
       currIndex: { type: Number },
       thumbnails: { type: Array },
-      thumbnailAlts: { type: Array }
+      thumbnailFallbacks: { type: Array },
+      thumbnailAlts: { type: Array },
+      visibleIndices: { type: Array, state: true }
     };
   }
 
@@ -83,6 +87,12 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
         object-fit: cover;
         display: block;
       }
+      .thumb-placeholder {
+        width: 100%;
+        height: 100%;
+        display: block;
+        background-color: var(--ddd-theme-default-limestoneLight);
+      }
       .dots {
         width: 100%;
         overflow-x: auto;
@@ -106,21 +116,24 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
 
   // Lit render the HTML
   render() {
+    const visibleSet = new Set(this.visibleIndices);
     let dots = [];
     for (let i = 0; i < this.total; i++) {
       const thumbnailSrc = this.thumbnails?.[i] || "";
+      const thumbnailFallback = this.thumbnailFallbacks?.[i] || thumbnailSrc;
       const thumbnailAlt = this.thumbnailAlts?.[i] || `Slide ${i + 1} thumbnail`;
+      const shouldLoad = visibleSet.has(i) || i === this.currIndex;
       dots.push(html`
         <button @click="${(e) => this._handleDotClick(e)}" data-index="${i}" class="dot ${i === this.currIndex ? 'active' : ''}" aria-label="Go to slide ${i + 1}">
-          ${thumbnailSrc
-            ? html`<img src="${thumbnailSrc}" alt="${thumbnailAlt}" data-index="${i}">`
-            : ""}
+          ${thumbnailSrc && shouldLoad
+            ? html`<img src="${thumbnailSrc}" alt="${thumbnailAlt}" loading="lazy" decoding="async" data-index="${i}" data-fallback="${thumbnailFallback}" @error="${this._handleThumbnailError}">`
+            : html`<span class="thumb-placeholder" data-index="${i}"></span>`}
         </button>
       `);
     }
 
     return html`
-      <div class="dots">
+      <div class="dots" @scroll="${this._handleDotsScroll}">
         <div class="track">
           ${dots}
         </div>
@@ -130,6 +143,9 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
 
   firstUpdated() {
     this._syncCarousel("auto");
+    this._updateVisibleThumbnails();
+    this._boundResizeHandler = () => this._updateVisibleThumbnails();
+    globalThis.addEventListener("resize", this._boundResizeHandler);
   }
 
   updated(changedProperties) {
@@ -139,7 +155,15 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
       changedProperties.has("total")
     ) {
       this._syncCarousel();
+      this._updateVisibleThumbnails();
     }
+  }
+
+  disconnectedCallback() {
+    if (this._boundResizeHandler) {
+      globalThis.removeEventListener("resize", this._boundResizeHandler);
+    }
+    super.disconnectedCallback();
   }
 
   _syncCarousel(behavior = "smooth") {
@@ -155,6 +179,61 @@ export class SlideIndicator extends DDDSuper(I18NMixin(LitElement)) {
     const left = Math.max(0, Math.min(targetLeft, maxLeft));
 
     container.scrollTo({ left, behavior });
+  }
+
+  _handleDotsScroll() {
+    this._updateVisibleThumbnails();
+  }
+
+  _handleThumbnailError(e) {
+    const image = e.target;
+    const fallback = image?.dataset?.fallback;
+
+    if (!image || !fallback || image.src === fallback) {
+      return;
+    }
+
+    image.src = fallback;
+  }
+
+  _updateVisibleThumbnails() {
+    const container = this.renderRoot?.querySelector(".dots");
+    const firstDot = this.renderRoot?.querySelector(".dot");
+
+    if (!container || !firstDot || this.total <= 0) {
+      this.visibleIndices = [];
+      return;
+    }
+
+    const track = this.renderRoot?.querySelector(".track");
+    const trackStyle = track ? globalThis.getComputedStyle(track) : null;
+    const gap = trackStyle ? parseFloat(trackStyle.columnGap || trackStyle.gap || "0") : 0;
+    const thumbWidth = firstDot.getBoundingClientRect().width + gap;
+
+    if (!thumbWidth) {
+      return;
+    }
+
+    const scrollLeft = container.scrollLeft;
+    const containerWidth = container.clientWidth;
+    const visibleStart = Math.floor(scrollLeft / thumbWidth);
+    const visibleEnd = Math.ceil((scrollLeft + containerWidth) / thumbWidth);
+
+    const buffer = 2;
+    const newVisible = [];
+    for (
+      let i = Math.max(0, visibleStart - buffer);
+      i < Math.min(this.total, visibleEnd + buffer);
+      i++
+    ) {
+      newVisible.push(i);
+    }
+
+    if (!newVisible.includes(this.currIndex)) {
+      newVisible.push(this.currIndex);
+    }
+
+    this.visibleIndices = newVisible;
   }
 
   _handleDotClick(e) {
