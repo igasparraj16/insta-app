@@ -371,7 +371,7 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
         caption: item.caption || "",
         datePosted: item.datePosted || "",
         photo: item.photo || "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d",
-        thumbnailPhoto: this._toThumbnailUrl(item.photo),
+        thumbnailPhoto: item.thumbnailPhoto || item.photo || "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d",
         profilePhoto: item.profilePhoto || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
         photoAlt: item.photoAlt || `${item.username || "User"} post photo`,
         profilePhotoAlt: item.profilePhotoAlt || `${item.username || "User"} profile photo`,
@@ -442,20 +442,6 @@ export class PlayList extends DDDSuper(I18NMixin(LitElement)) {
     const likedImages = JSON.parse(localStorage.getItem("likedImages") || "{}");
     likedImages[imageId] = liked;
     localStorage.setItem("likedImages", JSON.stringify(likedImages));
-  }
-
-  _toThumbnailUrl(url) {
-    if (!url) return url;
-    try {
-      const u = new URL(url);
-      u.searchParams.set("w", "90");
-      u.searchParams.set("h", "90");
-      u.searchParams.set("fit", "crop");
-      u.searchParams.set("auto", "format");
-      return u.toString();
-    } catch {
-      return url;
-    }
   }
 
   _loadLikedState() {
